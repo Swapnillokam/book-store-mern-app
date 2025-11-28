@@ -3,8 +3,9 @@ import { HiMiniBars3CenterLeft, HiOutlineHeart, HiOutlineShoppingCart } from "re
 import { IoSearchOutline } from "react-icons/io5";
 import { HiOutlineUser } from "react-icons/hi";
 import avatarImg from '../assets/avatar.png'
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { useAuth } from "../context/AuthContext";
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard' },
@@ -14,10 +15,28 @@ const navigation = [
 ]
 
 const Navbar = () => {
-  const currentUser = false
+  const { currentUser, logOutUser } = useAuth()
   const [isDropdownOpen, setisDropdownOpen] = useState(false)
   const cartItems = useSelector(state => state.cart.cartItems)
-  console.log("cartItems", cartItems)
+  const handleLogout = () => { logOutUser() }
+  const dropdownRef = useRef(null);
+  const avatarRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        !avatarRef.current.contains(event.target)
+      ) {
+        setisDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
 
   return (
     <header className="max-w-screen-2xl mx-auto px-4 py-6">
@@ -37,20 +56,23 @@ const Navbar = () => {
         {/* {right side} */}
         <div className="relative flex items-center space-x-2 md:space-x-2">
           {currentUser ? <>
-            <button onClick={() => setisDropdownOpen(!isDropdownOpen)}>
+            <button ref={avatarRef} onClick={() => setisDropdownOpen(!isDropdownOpen)}>
               <img src={avatarImg} alt=""
                 className={`size-7 rounded-full ${currentUser ? "ring ring-blue-500" : ""}`} />
             </button>
             <button>
               {/* show dropdown */}
               {isDropdownOpen && (
-                <div className="absolute top-10 right-0 mt-2 w-48 bg-white shadow-lg rounded-md z-40">
+                <div ref={dropdownRef} className="absolute top-10 right-0 mt-2 w-48 bg-white shadow-lg rounded-md z-40">
                   <ul className="py-2">
                     {navigation.map((item) => (
                       <li key={item.name} onClick={() => { setisDropdownOpen(!isDropdownOpen) }}>
                         <Link to={item.href} className="block px-4 py-2 text-sm hover:bg-gray-100" >{item.name} </Link>
                       </li>
                     ))}
+                    <li>
+                      <button className="block w-full px-4 py-2 text-sm hover:bg-gray-100" onClick={handleLogout}>Logout</button>
+                    </li>
                   </ul>
                 </div>
               )}
@@ -76,4 +98,3 @@ const Navbar = () => {
 }
 
 export default Navbar
- 

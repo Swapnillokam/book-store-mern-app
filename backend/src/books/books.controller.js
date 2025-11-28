@@ -2,9 +2,8 @@ const Book = require("./book.model");
 
 const postABook = async (req, res) => {
     try {
-        const newBook = await new Book({ ...req.body })
+        const newBook = await Book({ ...req.body })
         newBook.save();
-        console.log("req.params - ", req.params)
         res.status(200).send({ message: "Book Posted Sucessfully", book: newBook })
     } catch (error) {
         console.error("Error creating book", error)
@@ -15,7 +14,7 @@ const postABook = async (req, res) => {
 const getAllBoooks = async (req, res) => {
     try {
         const books = await Book.find().sort({ createdAt: -1 });
-        res.status(200).send({ message: "Fetching Books from database", books: books })
+        books.length > 0 ? res.status(200).send({ message: "Fetching Books from database", books: books }) : res.status(200).send({ message: "No Books available in the database", books: books })
     } catch (error) {
         console.error("Error Fetching details", error)
         res.status(500).send({ message: "Failed to fetch books", Error: error })
